@@ -92,18 +92,18 @@ void Projetil::percorrer(){
     //map[X][Y] = ' ';
     this->old_posX = X;
     this->old_posY = Y;
-    
-    
-    
+
+
+
     // Se o projetil nao colidir com parede move
     // caso contrario, desativa.
     if(map[X][Y-1] != '#'){
         int nY = this->get_posY() - 1;
         this->posY = nY;
         if(map[X][nY] == '*'){
-            isEnemyAlive = 0;  
+            isEnemyAlive = 0;
             PeriodMovEnemy = 125;
-        }       
+        }
     }else{
         this->setAtivo(0);
         apagar = 1;
@@ -320,7 +320,7 @@ void Tela::update(){
 
         /* Apaga a posicao antiga do projetil da tela */
         move(j_proj,i_proj);   /* Move cursor to position */
-        echochar(' ');      
+        echochar(' ');
         apagar = 0;
     }
 
@@ -466,7 +466,7 @@ void Enemy::move(){
      */
 
     if(!isEnemyAlive) this->avatar = '+';
-    
+
     while(!mov_permitido){
         movement = rand()%4;
         // Direita
@@ -494,8 +494,5 @@ void Enemy::move(){
     this->pos_Y = Y;
 
     map[X][Y] = this->get_avatar();
-    //move(B_posX, B_posY);   /* Move back cursor to position */
-    //echochar(' ');
-    //move(posX, posY);   /* Move cursor to position */
-    //echochar('*');
+    
 };

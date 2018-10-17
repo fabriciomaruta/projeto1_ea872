@@ -1,11 +1,17 @@
+#include <string.h>
 #include <iostream>
 #include <ncurses.h>
 #include <unistd.h>
 #include <cstdlib>
 #include <time.h>
-#include<chrono>
+#include <chrono>
 #include "model.hpp"
 #include "playback.hpp"
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 using namespace std;
 
@@ -20,14 +26,14 @@ uint64_t get_now_ms() {
 void Holds(float time){
     float t0;
     float t1;
-    
+
     t0 = get_now_ms();
-    
+
     while(1){
         t1 = get_now_ms();
         if(t1 - t0 > time) break;
-    } 
-    
+    }
+
 }
 
 void cleanS(){
@@ -82,6 +88,7 @@ int main(){
     player->init();
     int i,j;
     char c;
+
     Corpo *avatar = new Corpo('@', 1, 1,0,0);
     Enemy *enemy = new Enemy('*', 5, 5,0,0);
     Projetil *proj = new Projetil('|',0,0,0,0,0);
@@ -101,16 +108,34 @@ int main(){
     t_base_B = get_now_ms();
     t1 = T;
 
-    enemy->init();
 
-    
+    int socket_fd, connection_fd;
+    struct sockaddr_in myself, client;
+    socklen_t client_size = (socklen_t)sizeof(client);
+    char *input;
+
+    socket_fd = socket(AF_INET, SOCK_STREAM, 0);
+    myself.sin_family = AF_INET;
+    myself.sin_port = htons(3007);
+    inet_aton("127.0.0.1", &(myself.sin_addr));
+     printf("Tentando abrir porta 3001\n");
+     if (bind(socket_fd, (struct sockaddr*)&myself, sizeof(myself)) != 0) {
+       printf("Problemas ao abrir porta\n");
+       return 0;
+     }
+
+     listen(socket_fd, 2);
+
+     enemy->init();
+
+
     //cleanS();
-    
-    move(5,9);
-    printw("* * * * * * * * * * * * *");   
 
-    
-    
+    move(5,9);
+    printw("* * * * * * * * * * * * *");
+
+
+
     move(6,12);
     printw("P H A R A O H ' S");
 
@@ -118,32 +143,32 @@ int main(){
     move(7,12);
     printw(". _ . _ . _ . _ . _ .");
 
-    
-    
-    move(8,12);
-    printw("L A B Y R I N T H");  
 
-    
+
+    move(8,12);
+    printw("L A B Y R I N T H");
+
+
     move(9,9);
-    printw("* * * * * * * * * * * * *");    
-    
+    printw("* * * * * * * * * * * * *");
+
         Holds(2000);
     //Holds(5500);
-                    
-                    
 
-    cleanS();   
-    
+
+
+    cleanS();
+
     tela->initMap();
-    
-    
+
+
     move(5,25);
     printw("Points: ");
-  
-    
+
+
 
     /* ------------------------- LACO PRINCIPAL --------------------------*/
-
+    connection_fd = accept(socket_fd, (struct sockaddr*)&client, &client_size);
     while (1) {
         t0 = t1;
         t1 = get_now_ms();
@@ -165,15 +190,17 @@ int main(){
                 proj->percorrer();
             }
         }
-        
-        c = teclado->getchar();
-        tela->update();
 
+	 //c = teclado->getchar();
+	/*-------------LER DENTRO DA THREAD?[PEGA TECLADO] ----------------------*/
+	recv(connection_fd,input, 1, 0);
+	c = *input;
 
-
+	//c = input;
+	tela->update();
 
         // Somente dispara o projetil se nao houver outro em execucao
-        if (c == 32 && proj->isAtivo() == 0){
+        if (c == ' ' && proj->isAtivo() == 0){
             // Passa para pos. inicial do projetil a posicao
             // atual do avatar.
             int X = avatar->get_pos_X();
@@ -182,7 +209,7 @@ int main(){
             proj->disparar(X,Y);
         }
 
-        if (c =='s'){
+        if (c == 's'){
           avatar->moveTop();
           while(1){
             std::this_thread::sleep_for (std::chrono::milliseconds(1));
@@ -190,7 +217,7 @@ int main(){
             if(t1-t0 > 10) break;
           }
         }
-        if (c =='w'){
+        if (c == 'w'){
           avatar->moveBottom();
           while(1){
             std::this_thread::sleep_for (std::chrono::milliseconds(1));
@@ -198,7 +225,7 @@ int main(){
             if(t1-t0 > 10) break;
           }
         }
-        if (c =='d'){
+        if (c == 'd'){
           avatar->moveRight();
           while(1){
             std::this_thread::sleep_for (std::chrono::milliseconds(1));
@@ -206,7 +233,7 @@ int main(){
             if(t1-t0 > 10) break;
           }
         }
-        if (c =='a'){
+        if (c == 'a'){
           avatar->moveLeft();
           while(1){
             std::this_thread::sleep_for (std::chrono::milliseconds(1));
@@ -215,7 +242,7 @@ int main(){
           }
         }
 
-        if(c == 'q' || game_over == 1){
+        if(c == 'q'|| game_over == 1){
               t0 = get_now_ms();
           while(1){
             std::this_thread::sleep_for (std::chrono::milliseconds(1));
@@ -228,7 +255,9 @@ int main(){
       //i++;
 
     }
+    /*------------------[PEGA TECLADO]-----------------------------------------*/
 
+    /*-----------Define fim de jogo ----------------------------*/
     if(game_over == 1) {
       if(ganhou){
 	 player->play(winner);
@@ -254,17 +283,15 @@ int main(){
 	lose();
       }
     }
-
     // Segura na tela por 1.5 seg
     t0 = get_now_ms();
     while(1){
     t1 = get_now_ms();
     if(t1 - t0 > 1500) break;
     }
-
-
   //player->stop();
   tela->stop();
   teclado->stop();
+  close(socket_fd);
 	return 0;
 }
