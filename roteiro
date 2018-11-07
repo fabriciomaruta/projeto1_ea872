@@ -1,0 +1,5 @@
+-- Serializar tela
+-- Enviar resposta para client contendo infos dos personagens
+-- configurar conexão para mais de um client
+-- configurar serialização para mais de um client
+
