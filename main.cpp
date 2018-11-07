@@ -17,10 +17,11 @@
 
 /*Socket variables*/
 int socket_fd, connection_fd[MAX_CONEXOES], conexao_usada[MAX_CONEXOES];
-struct sockaddr_in myself, client;
 socklen_t client_size;
+struct sockaddr_in myself, client;
+
 char *input;
-int running;
+int running ;
 
 using namespace std;
 
@@ -47,11 +48,7 @@ void wait_connections() {
   while(running) {
     conn_fd = accept(socket_fd, (struct sockaddr*)&client, &client_size);
     user_id = adicionar_conexao(conn_fd);
-    if(user_id != -1){
-      printf("New user arrived\n ");
-    }else{
-      printf("Lotou meu amigo!\n");
-    }
+
   }
   return ;
 }
@@ -121,8 +118,7 @@ void lose(){
 int main(){
 
   /*Thread controle variables*/
-  std::thread connection_control(wait_connections); //Insert arguments
-  
+
   /*Interface variables*/
     Audio::Sample *loser;
     Audio::Sample *winner;
@@ -133,17 +129,9 @@ int main(){
 
     Audio::Player *player;
     player = new Audio::Player();
-    player->init();
+    //player->init();
     int i,j;
     char c;
-    Corpo *avatar = new Corpo('@', 1, 1,0,0);
-    Enemy *enemy = new Enemy('*', 5, 5,0,0);
-    Projetil *proj = new Projetil('|',0,0,0,0,0);
-
-    Tela *tela = new Tela(avatar,enemy,proj,20,20,20,20);
-    tela->init();
-    Teclado *teclado = new Teclado();
-    teclado->init();
     /*Time control variables*/
     float t0;
     float t1;
@@ -155,6 +143,10 @@ int main(){
     t_base_A = get_now_ms();
     t_base_B = get_now_ms();
     t1 = T;
+
+
+    /**/
+
     /*Socket variables*/
     char *input_buffer;
     char *output_buffer;
@@ -169,7 +161,7 @@ int main(){
 
     socket_fd = socket(AF_INET, SOCK_STREAM, 0);
     myself.sin_family = AF_INET;
-    myself.sin_port = htons(3007);
+    myself.sin_port = htons(6004);
     inet_aton("127.0.0.1", &(myself.sin_addr));
      printf("Tentando abrir porta 3001\n");
      if (bind(socket_fd, (struct sockaddr*)&myself, sizeof(myself)) != 0) {
@@ -178,9 +170,19 @@ int main(){
      }
      printf("Abri porta 3001");
      listen(socket_fd, 2);
+    std::thread connection_control(wait_connections); //Insert arguments
+    Corpo *avatar = new Corpo('@', 7, 7,0,0);
+    Enemy *enemy = new Enemy('*', 5, 5,0,0);
+    Projetil *proj = new Projetil('|',0,0,0,0,0);
+    enemy->init();
+    avatar->init();
+    //Teclado *teclado = new Teclado();
+    //teclado->init();
+    Tela *tela = new Tela(avatar,enemy,proj,20,20,20,20);
+    tela->init();
+
 
      /*Run elements of interface*/
-    enemy->init();
     move(5,9);
     printw("* * * * * * * * * * * * *");
     move(6,12);
@@ -193,73 +195,43 @@ int main(){
     printw("* * * * * * * * * * * * *");
     Holds(2000);
     cleanS();
-    tela->initMap();
     move(5,25);
     printw("Points: ");
-
+    tela->initMap();
     /* ------------------------- LACO PRINCIPAL --------------------------*/
      /*Dispara thread para ouvir conexoes*/
-    connection_control.join();
 
-    
-    /*Really need this? \/ */
-    // fctnl - file 
-    //connection_fd = accept(socket_fd, (struct sockaddr*)&client, &client_size);
-    /*TODO this this_thread*/
-    //std::this_thread::wait (std::chrono::milliseconds(1));
-    while (1) {
-        t0 = t1;
-        t1 = get_now_ms();
-        deltaT_A = t1-t_base_A;
-        deltaT_B = t1-t_base_B;
+  while (running || game_over == 1) {
+    t0 = t1;
+    t1 = get_now_ms();
+    deltaT_A = t1-t_base_A;
+    deltaT_B = t1-t_base_B;
 
-        // Periodo do movimento do inimigo
-        if(deltaT_A > PeriodMovEnemy){
-            deltaT_A = 0;
-            t_base_A = t1;
-            enemy->move();
+
+    // Periodo do movimento do inimigo
+    if(deltaT_A > PeriodMovEnemy){
+        deltaT_A = 0;
+        t_base_A = t1;
+        enemy->move();
+    }
+
+    // Se o projetil estiver ativo (em percurso)...
+    if(proj->isAtivo() == 1){
+        if(deltaT_B > PeriodMovProj){
+            deltaT_B = 0;
+            t_base_B = t1;
+            proj->percorrer();
         }
+    }
 
-        // Se o projetil estiver ativo (em percurso)...
-        if(proj->isAtivo() == 1){
-            if(deltaT_B > PeriodMovProj){
-                deltaT_B = 0;
-                t_base_B = t1;
-                proj->percorrer();
-            }
-        }
-
-	 //c = teclado->getchar();
+    tela->update();
 	/*-------------LER DENTRO DA THREAD?[PEGA TECLADO] ----------------------*/
-	while(running){
 	  for(user_iterator = 0; user_iterator < MAX_CONEXOES; user_iterator ++){
-	    if(conexao_usada[user_iterator] == 1){
-	      msglen = recv(connection_fd[user_iterator], input_buffer, 1, MSG_DONTWAIT);
-	      if(msglen > 0){
-		/*Recebi mensagem*/
-		if(*input_buffer == 'q' ) running = 0;
-		printf("Output buffer");
-		for(int ret = 0; ret<MAX_CONEXOES; ret ++){
-		  if(conexao_usada[ret] == 1){
-		    printf(""); /*Avisando user*/
-		    if(send(connection_fd[ret], output_buffer,1,MSG_NOSIGNAL) == -1){
-		      /*user disconnected??*/
-		      printf("USUARIO DISCONECTADO");
-		      remover_conexao(ret);
-		    }
-		  }
-		}
-	      }
-	    }
-	  }
-	}
-	
-	c = *input_buffer;
-	tela->update();
-	/*--------------ESPERA RESPOSTA POR SOCKET-----------------------*/
-	
-        // Somente dispara o projetil se nao houver outro em execucao
-	if (c == ' ' && proj->isAtivo() == 0){
+      if(conexao_usada[user_iterator] == 1){
+	      msglen = recv(connection_fd[user_iterator], &c, 1, MSG_DONTWAIT);
+        if (msglen > 0) {
+          if ( c=='q') running=0;
+          if (c == ' ' && proj->isAtivo() == 0){
             // Passa para pos. inicial do projetil a posicao
             // atual do avatar.
             int X = avatar->get_pos_X();
@@ -311,14 +283,30 @@ int main(){
           break;
         }
       std::this_thread::sleep_for (std::chrono::milliseconds(10));
+          //for (int ret=0; ret<MAX_CONEXOES; ret++) {
+            //if (conexao_usada[ret] == 1) {
+              //printf("Avisando user %d\n", ret);
+              //if (send(connection_fd[ret], output_buffer, 50, MSG_NOSIGNAL) == -1) {
+               /* Usuario desconectou!?? */
+              //  printf("Usuario %d desconectou!\n", ret);
+                //remover_conexao(ret);
+                //}
+              //}
+            //}
+          }
+        }
+	     }
+	/*--------------ESPERA RESPOSTA POR SOCKET-----------------------*/
 
-    }
+  // Somente dispara o projetil se nao houver outro em execucao
+
+  }
     /*-----------------------------------------------------------*/
 
     /*-----------Define fim de jogo ----------------------------*/
     if(game_over == 1) {
       if(ganhou){
-	 player->play(winner);
+	 //player->play(winner);
       t0 = get_now_ms();
       while(1){
         std::this_thread::sleep_for (std::chrono::milliseconds(1));
@@ -329,7 +317,7 @@ int main(){
 	win();
       }
       else{
-	 player->play(loser);
+	 //player->play(loser);
       t0 = get_now_ms();
       while(1){
         std::this_thread::sleep_for (std::chrono::milliseconds(1));
@@ -349,10 +337,9 @@ int main(){
     }
   //player->stop();
   tela->stop();
-  teclado->stop();
+  //teclado->stop();
   close(socket_fd);
-	return 0;
+
+  connection_control.join();
+  return 0;
 }
-
-
-

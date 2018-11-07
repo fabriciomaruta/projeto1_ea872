@@ -122,7 +122,11 @@ Corpo::Corpo(char avatar, int pos_X, int pos_Y, int old_pos_X, int old_pos_Y) {
   this->old_pos_X = old_pos_X;
   this->old_pos_Y = old_pos_Y;
 }
-
+void Corpo::init(){
+    int X = get_pos_X();
+    int Y = get_pos_Y();
+    map[X][Y] = get_avatar();
+};
 void Corpo::update(int X, int Y) {
   this->old_pos_X = this->pos_X; // Holds _
   this->old_pos_Y = this->pos_Y; // last position
@@ -270,8 +274,6 @@ void threadfun (char *keybuffer, int *control)
 }
 
 void Tela::init(){
-
-
     initscr(); /*Start curses mode*/
     raw();
     curs_set(0);
@@ -494,5 +496,5 @@ void Enemy::move(){
     this->pos_Y = Y;
 
     map[X][Y] = this->get_avatar();
-    
+
 };

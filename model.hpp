@@ -43,6 +43,7 @@ class Corpo { /*Classe para criar o personagem e as caracteristicas*/
 
   public:
     Corpo(char avatar, int pos_X, int pos_Y, int old_pos_X, int old_pos_Y);
+    void init();
     void update(int X, int Y);
     int get_pos_X();
     int get_pos_Y();
