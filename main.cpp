@@ -226,8 +226,7 @@ int main(){
     }
 
     tela->update();
-    pass = new DataState(avatar,enemy,proj);
-    pass->serialize(buffer);
+
     /*abrir socket para enviar dados da tela*/
 
     /**/
@@ -292,6 +291,9 @@ int main(){
       std::this_thread::sleep_for (std::chrono::milliseconds(10));
           }
         }
+        pass = new DataState(avatar,enemy,proj);
+        pass->serialize(buffer);
+        send(connection_fd[user_iterator],pass,sizeof(DataState), MSG_NOSIGNAL);
 	     }
 
   }

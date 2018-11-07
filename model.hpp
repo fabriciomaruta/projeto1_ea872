@@ -15,8 +15,16 @@ extern float PeriodMovEnemy;
 extern float PeriodMovProj;
 struct DataContainer {
   int jogador_X;
+  int jogador_Y;
+  char jogador_avatar;
+
   int inimigo_X;
+  int inimigo_Y;
+  char inimigo_avatar;
+
   int projetil_X;
+  int projetil_Y;
+  char projetil_avatar;
 
 };
 

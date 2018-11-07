@@ -495,8 +495,16 @@ DataState::DataState(){
 };
 DataState::DataState(Corpo *jogador, Enemy *inimigo, Projetil *projetil){
   this->data.jogador_X = jogador->get_pos_X();
+  this->data.jogador_Y = jogador->get_pos_Y();
+  this->data.jogador_avatar = jogador->get_avatar();
+
   this->data.inimigo_X = inimigo->get_pos_X();
+  this->data.inimigo_Y = inimigo->get_pos_Y();
+  this->data.inimigo_avatar = inimigo->get_avatar();
+
   this->data.projetil_X = projetil->get_posX();
+  this->data.projetil_Y = projetil->get_posY();
+  this->data.projetil_avatar = projetil->get_sym();
 }
 
 DataState::DataState(std::string buffer_in){

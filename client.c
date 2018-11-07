@@ -17,10 +17,9 @@ void *receber_respostas(void *parametros) {
   int msg_num;
   msg_num = 0;
   while(1) {
-  msg_len = recv(socket_fd, reply, 1, MSG_DONTWAIT);
+  msg_len = recv(socket_fd, reply, 12, MSG_DONTWAIT);
   if (msg_len > 0) {
-    printf("[%d][%d] RECEBI:\n%s\n", msg_num, msg_len, reply);
-    msg_num++;
+    printw("aaaa:%s\n",  reply);
   }
   }
 }
@@ -29,7 +28,9 @@ int main() {
   struct sockaddr_in target;
   pthread_t receiver;
   char com;
-  initscr();
+  char reply[60];
+  int msg_len;
+  int msg_num;
 
   socket_fd = socket(AF_INET, SOCK_STREAM, 0);
   printf("Socket criado\n");
@@ -43,20 +44,23 @@ int main() {
     return 0;
   }
   printf("Conectei ao servidor\n");
-  pthread_create(&receiver, NULL, receber_respostas,NULL);
-  fflush(stdin);
-  while(1){
+  //pthread_create(&receiver, NULL, receber_respostas,NULL);
+  initscr();
 
+  while(1){
     com = getch();
     printf("\ncomando:  %c", com );
     if(com  != -1){
       send(socket_fd,&com,1,0);
       printf("Comando Enviado !\n");
     }
-    fflush(stdin);
-
+    msg_num = 0;
+    msg_len = recv(socket_fd, reply, 12, MSG_DONTWAIT);
+    if (msg_len > 0) {
+      printw("aaaa:%s\n",  reply);
+    }
     //sleep(1);
     }
-  close(socket_fd);
+
   return 0;
 }
