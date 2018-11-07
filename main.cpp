@@ -120,6 +120,9 @@ int main(){
   /*Thread controle variables*/
 
   /*Interface variables*/
+    DataState *pass;
+    std::string buffer(sizeof(DataContainer), ' ');
+
     Audio::Sample *loser;
     Audio::Sample *winner;
     loser = new Audio::Sample();
@@ -176,8 +179,6 @@ int main(){
     Projetil *proj = new Projetil('|',0,0,0,0,0);
     enemy->init();
     avatar->init();
-    //Teclado *teclado = new Teclado();
-    //teclado->init();
     Tela *tela = new Tela(avatar,enemy,proj,20,20,20,20);
     tela->init();
 
@@ -225,12 +226,16 @@ int main(){
     }
 
     tela->update();
+    pass = new DataState(avatar,enemy,proj);
+    pass->serialize(buffer);
+    /*abrir socket para enviar dados da tela*/
+
+    /**/
 	/*-------------LER DENTRO DA THREAD?[PEGA TECLADO] ----------------------*/
 	  for(user_iterator = 0; user_iterator < MAX_CONEXOES; user_iterator ++){
       if(conexao_usada[user_iterator] == 1){
 	      msglen = recv(connection_fd[user_iterator], &c, 1, MSG_DONTWAIT);
-        if (msglen > 0) {
-          if ( c=='q') running=0;
+        if (msglen > 0 && game_over != 1) {
           if (c == ' ' && proj->isAtivo() == 0){
             // Passa para pos. inicial do projetil a posicao
             // atual do avatar.
@@ -273,37 +278,24 @@ int main(){
           }
         }
 
-        if(c == 'q'|| game_over == 1){
+        if(c == 'q'){
               t0 = get_now_ms();
           while(1){
             std::this_thread::sleep_for (std::chrono::milliseconds(1));
             t1 = get_now_ms();
             if(t1-t0 > 10) break;
           }
+          running = 0;
+          game_over = 1;
           break;
         }
       std::this_thread::sleep_for (std::chrono::milliseconds(10));
-          //for (int ret=0; ret<MAX_CONEXOES; ret++) {
-            //if (conexao_usada[ret] == 1) {
-              //printf("Avisando user %d\n", ret);
-              //if (send(connection_fd[ret], output_buffer, 50, MSG_NOSIGNAL) == -1) {
-               /* Usuario desconectou!?? */
-              //  printf("Usuario %d desconectou!\n", ret);
-                //remover_conexao(ret);
-                //}
-              //}
-            //}
           }
         }
 	     }
-	/*--------------ESPERA RESPOSTA POR SOCKET-----------------------*/
-
-  // Somente dispara o projetil se nao houver outro em execucao
 
   }
-    /*-----------------------------------------------------------*/
 
-    /*-----------Define fim de jogo ----------------------------*/
     if(game_over == 1) {
       if(ganhou){
 	 //player->play(winner);

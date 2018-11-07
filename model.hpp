@@ -2,6 +2,10 @@
 #define MODEL_HPP
 #include <vector>
 #include<thread>
+#include <fstream>
+#include <iostream>
+#include <string>
+
 
 
 extern char map[24][24];
@@ -9,6 +13,12 @@ extern int ganhou;
 extern int game_over;
 extern float PeriodMovEnemy;
 extern float PeriodMovProj;
+struct DataContainer {
+  int jogador_X;
+  int inimigo_X;
+  int projetil_X;
+
+};
 
 class Projetil {
     private:
@@ -129,7 +139,16 @@ public:
   char getchar();
 };
 
-
+class DataState {
+private:
+  DataContainer data;
+public:
+  DataState();
+  DataState(Corpo *jogador, Enemy *inimigo, Projetil *projetil);
+  DataState(std::string buffer_in);
+  void serialize(std::string &buffer_out);
+  void unserialize(std::string buffer_in);
+};
 
 
 

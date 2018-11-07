@@ -2,8 +2,8 @@
 #include "model.hpp"
 #include <ncurses.h>
 #include <vector>
-
-
+#include <cstring>
+#include <string>
 using namespace std;
 
 
@@ -212,10 +212,6 @@ void Corpo::moveLeft(){
 }
 
 
-
-
-
-
 ListaDeCorpos::ListaDeCorpos() {
   this->corpos = new std::vector<Corpo *>(0);
 }
@@ -235,12 +231,6 @@ void ListaDeCorpos::hard_copy(ListaDeCorpos *ldc) {
 std::vector<Corpo*> *ListaDeCorpos::get_corpos() {
   return (this->corpos);
 }
-
-
-
-
-
-
 
 
 Tela::Tela(Corpo *corpo,Enemy *enemy,Projetil *proj,int maxI, int maxJ, float maxX, float maxY){
@@ -498,3 +488,24 @@ void Enemy::move(){
     map[X][Y] = this->get_avatar();
 
 };
+
+
+DataState::DataState(){
+
+};
+DataState::DataState(Corpo *jogador, Enemy *inimigo, Projetil *projetil){
+  this->data.jogador_X = jogador->get_pos_X();
+  this->data.inimigo_X = inimigo->get_pos_X();
+  this->data.projetil_X = projetil->get_posX();
+}
+
+DataState::DataState(std::string buffer_in){
+  this->unserialize(buffer_in);
+}
+
+void DataState::serialize(std::string &buffer_out){
+    std::memcpy((void*)buffer_out.c_str(), &(this->data), sizeof(DataContainer));
+}
+void DataState::unserialize(std::string buffer_in) {
+  std::memcpy(&(this->data), (void*)buffer_in.c_str(), sizeof(DataContainer));
+}
