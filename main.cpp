@@ -230,9 +230,9 @@ int main() {
                     for(int ret = 0; ret<MAX_CONEXOES;ret++){
                       if(conexao_usada[ret] == 1){
                           pass->atualiza(avatar,enemy,proj);
-                          tela->update();
                           pass->serialize(buffer);
                           if(send(connection_fd[user_iterator],pass,sizeof(DataContainer), MSG_NOSIGNAL) == -1){
+
                             remover_conexao(ret);
                           }
                       }
