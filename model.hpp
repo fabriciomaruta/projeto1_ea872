@@ -41,6 +41,7 @@ class Projetil {
     Projetil(char syym, int ativo, int posX, int posY, int old_posX, int old_posY);
     void disparar(int origemX, int origemY);
     void percorrer();
+    void set_sym(char sym);
     int get_old_posX();
     int get_old_posY();
     int get_posX();
@@ -62,6 +63,7 @@ class Corpo { /*Classe para criar o personagem e as caracteristicas*/
   public:
     Corpo(char avatar, int pos_X, int pos_Y, int old_pos_X, int old_pos_Y);
     void init();
+    void set_avatar(char avatar);
     void update(int X, int Y);
     int get_pos_X();
     int get_pos_Y();
@@ -154,8 +156,15 @@ public:
   DataState();
   DataState(Corpo *jogador, Enemy *inimigo, Projetil *projetil);
   DataState(std::string buffer_in);
+  void atualiza(Corpo *jogador, Enemy *inimigo, Projetil *projetil);
   void serialize(std::string &buffer_out);
   void unserialize(std::string buffer_in);
+  char jogador_get_avatar();
+  int jogador_get_pos_X();
+  int jogador_get_pos_Y();
+  char projetil_get_avatar();
+  int projetil_get_pos_X();
+  int projetil_get_pos_Y();
 };
 
 

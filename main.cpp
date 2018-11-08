@@ -27,112 +27,96 @@ using namespace std;
 
 using namespace std::chrono;
 uint64_t get_now_ms() {
-  return duration_cast<milliseconds>(steady_clock::now().time_since_epoch()).count();
+    return duration_cast<milliseconds>(steady_clock::now().time_since_epoch()).count();
 }
 
 int adicionar_conexao(int new_connection_fd) {
-  int i;
-  for (i=0; i<MAX_CONEXOES; i++) {
-    if (conexao_usada[i] == 0) {
-      conexao_usada[i] = 1;
-      connection_fd[i] = new_connection_fd;
-      return i;
+    int i;
+    for (i=0; i<MAX_CONEXOES; i++) {
+        if (conexao_usada[i] == 0) {
+            conexao_usada[i] = 1;
+            connection_fd[i] = new_connection_fd;
+            return i;
+        }
     }
-  }
-  return -1;
+    return -1;
 }
 
 void wait_connections() {
-  int conn_fd;
-  int user_id;
-  while(running) {
-    conn_fd = accept(socket_fd, (struct sockaddr*)&client, &client_size);
-    user_id = adicionar_conexao(conn_fd);
+    int conn_fd;
+    int user_id;
+    while(running) {
+        conn_fd = accept(socket_fd, (struct sockaddr*)&client, &client_size);
+        user_id = adicionar_conexao(conn_fd);
 
-  }
-  return ;
+    }
+    return ;
 }
 
 
 int remover_conexao(int user) {
-  if (conexao_usada[user]==1) {
-  conexao_usada[user] = 0;
-  close(connection_fd[user]);
-  }
-  return 1;
+    if (conexao_usada[user]==1) {
+        conexao_usada[user] = 0;
+        close(connection_fd[user]);
+    }
+    return 1;
 }
 
 
-void Holds(float time){
+void Holds(float time) {
     float t0;
     float t1;
 
     t0 = get_now_ms();
 
-    while(1){
+    while(1) {
         t1 = get_now_ms();
         if(t1 - t0 > time) break;
     }
 
 }
 
-void cleanS(){
-    for(int i = 0; i<25; i++){
+void cleanS() {
+    for(int i = 0; i<25; i++) {
         move(i,0);
         printw("                                              ");
     }
-
-
 }
 
-
-void win(){
-    for(int i = 0; i<25; i++){
+void win() {
+    for(int i = 0; i<25; i++) {
         move(i,0);
         printw("                                              ");
     }
-
-        move(5,7);
-        printw("Y O U");
-
-
-        move(6,7);
-        printw("W I N !");
+    move(5,7);
+    printw("Y O U");
+    move(6,7);
+    printw("W I N !");
 }
 
-void lose(){
-    for(int i = 0; i<25; i++){
+void lose() {
+    for(int i = 0; i<25; i++) {
         move(i,0);
         printw("                                              ");
     }
-
-        move(5,7);
-        printw("Y O U");
-
-
-        move(6,7);
-        printw("L O S E !");
+    move(5,7);
+    printw("Y O U");
+    move(6,7);
+    printw("L O S E !");
 }
 
-
-int main(){
-
-  /*Thread controle variables*/
-
-  /*Interface variables*/
+int main() {
+    /*Interface variables*/
     DataState *pass;
     std::string buffer(sizeof(DataContainer), ' ');
-
     Audio::Sample *loser;
     Audio::Sample *winner;
     loser = new Audio::Sample();
     winner = new Audio::Sample();
     loser->load("assets/loser.dat");
     winner->load("assets/win.dat");
-
     Audio::Player *player;
     player = new Audio::Player();
-    //player->init();
     int i,j;
     char c;
     /*Time control variables*/
@@ -146,10 +130,6 @@ int main(){
     t_base_A = get_now_ms();
     t_base_B = get_now_ms();
     t1 = T;
-
-
-    /**/
-
     /*Socket variables*/
     char *input_buffer;
     char *output_buffer;
@@ -158,32 +138,30 @@ int main(){
     /*Socket variables initialization*/
     client_size = (socklen_t)sizeof(client);
     for (int i=0; i<MAX_CONEXOES; i++) {
-      conexao_usada[i] = 0;
+        conexao_usada[i] = 0;
     }
     running = 1;
-
     socket_fd = socket(AF_INET, SOCK_STREAM, 0);
     myself.sin_family = AF_INET;
-    myself.sin_port = htons(6004);
+    myself.sin_port = htons(7456);
     inet_aton("127.0.0.1", &(myself.sin_addr));
-     printf("Tentando abrir porta 3001\n");
-     if (bind(socket_fd, (struct sockaddr*)&myself, sizeof(myself)) != 0) {
-       printf("Problemas ao abrir porta\n");
-       return 0;
-     }
-     printf("Abri porta 3001");
-     listen(socket_fd, 2);
+    printf("Tentando abrir porta 3001\n");
+    if (bind(socket_fd, (struct sockaddr*)&myself, sizeof(myself)) != 0) {
+        printf("Problemas ao abrir porta\n");
+        return 0;
+    }
+    printf("Abri porta 3001");
+    listen(socket_fd, 2);
     std::thread connection_control(wait_connections); //Insert arguments
-    Corpo *avatar = new Corpo('@', 7, 7,0,0);
+    Corpo *avatar = new Corpo('@', 6, 7,0,0);
     Enemy *enemy = new Enemy('*', 5, 5,0,0);
     Projetil *proj = new Projetil('|',0,0,0,0,0);
     enemy->init();
     avatar->init();
     Tela *tela = new Tela(avatar,enemy,proj,20,20,20,20);
     tela->init();
-
-
-     /*Run elements of interface*/
+    pass = new DataState(avatar,enemy,proj);
+    /*Run elements of interface*/
     move(5,9);
     printw("* * * * * * * * * * * * *");
     move(6,12);
@@ -200,140 +178,103 @@ int main(){
     printw("Points: ");
     tela->initMap();
     /* ------------------------- LACO PRINCIPAL --------------------------*/
-     /*Dispara thread para ouvir conexoes*/
+    /*Dispara thread para ouvir conexoes*/
+    while (game_over != 1) {
+        t0 = t1;
+        t1 = get_now_ms();
+        deltaT_A = t1-t_base_A;
+        deltaT_B = t1-t_base_B;
+        // Periodo do movimento do inimigo
+        if(deltaT_A > PeriodMovEnemy) {
+            deltaT_A = 0;
+            t_base_A = t1;
+            enemy->move();
+        }
+        // Se o projetil estiver ativo (em percurso)...
+        if(proj->isAtivo() == 1) {
+            if(deltaT_B > PeriodMovProj) {
+                deltaT_B = 0;
+                t_base_B = t1;
+                proj->percorrer();
+            }
+        }
 
-  while (running || game_over == 1) {
-    t0 = t1;
-    t1 = get_now_ms();
-    deltaT_A = t1-t_base_A;
-    deltaT_B = t1-t_base_B;
-
-
-    // Periodo do movimento do inimigo
-    if(deltaT_A > PeriodMovEnemy){
-        deltaT_A = 0;
-        t_base_A = t1;
-        enemy->move();
-    }
-
-    // Se o projetil estiver ativo (em percurso)...
-    if(proj->isAtivo() == 1){
-        if(deltaT_B > PeriodMovProj){
-            deltaT_B = 0;
-            t_base_B = t1;
-            proj->percorrer();
+        /*-------------LER DENTRO DA THREAD?[PEGA TECLADO] ----------------------*/
+        for(user_iterator = 0; user_iterator < MAX_CONEXOES; user_iterator ++) {
+            if(conexao_usada[user_iterator] == 1) {
+                msglen = recv(connection_fd[user_iterator], &c, 1, MSG_DONTWAIT);
+                if (msglen > 0 && game_over != 1) {
+                    if (c == ' ' && proj->isAtivo() == 0) {
+                        int X = avatar->get_pos_X();
+                        int Y = avatar->get_pos_Y();
+                        proj->setAtivo(1);
+                        proj->disparar(X,Y);
+                    }
+                    if (c == 's') {
+                        avatar->moveTop();
+                    }
+                    if (c == 'w') {
+                        avatar->moveBottom();
+                    }
+                    if (c == 'd') {
+                        avatar->moveRight();
+                    }
+                    if (c == 'a') {
+                        avatar->moveLeft();
+                    }
+                    if(c == 'q') {
+                        running = 0;
+                        game_over = 1;
+                        break;
+                    }
+                    for(int ret = 0; ret<MAX_CONEXOES;ret++){
+                      if(conexao_usada[ret] == 1){
+                          pass->atualiza(avatar,enemy,proj);
+                          tela->update();
+                          pass->serialize(buffer);
+                          if(send(connection_fd[user_iterator],pass,sizeof(DataContainer), MSG_NOSIGNAL) == -1){
+                            remover_conexao(ret);
+                          }
+                      }
+                    }
+                }
+            }
+            tela->update();
         }
     }
-
-    tela->update();
-
-    /*abrir socket para enviar dados da tela*/
-
-    /**/
-	/*-------------LER DENTRO DA THREAD?[PEGA TECLADO] ----------------------*/
-	  for(user_iterator = 0; user_iterator < MAX_CONEXOES; user_iterator ++){
-      if(conexao_usada[user_iterator] == 1){
-	      msglen = recv(connection_fd[user_iterator], &c, 1, MSG_DONTWAIT);
-        if (msglen > 0 && game_over != 1) {
-          if (c == ' ' && proj->isAtivo() == 0){
-            // Passa para pos. inicial do projetil a posicao
-            // atual do avatar.
-            int X = avatar->get_pos_X();
-            int Y = avatar->get_pos_Y();
-            proj->setAtivo(1);
-            proj->disparar(X,Y);
-        }
-
-        if (c == 's'){
-          avatar->moveTop();
-          while(1){
-            std::this_thread::sleep_for (std::chrono::milliseconds(1));
-            t1 = get_now_ms();
-            if(t1-t0 > 10) break;
-          }
-        }
-        if (c == 'w'){
-          avatar->moveBottom();
-          while(1){
-            std::this_thread::sleep_for (std::chrono::milliseconds(1));
-            t1 = get_now_ms();
-            if(t1-t0 > 10) break;
-          }
-        }
-        if (c == 'd'){
-          avatar->moveRight();
-          while(1){
-            std::this_thread::sleep_for (std::chrono::milliseconds(1));
-            t1 = get_now_ms();
-            if(t1-t0 > 10) break;
-          }
-        }
-        if (c == 'a'){
-          avatar->moveLeft();
-          while(1){
-            std::this_thread::sleep_for (std::chrono::milliseconds(1));
-            t1 = get_now_ms();
-            if(t1-t0 > 10) break;
-          }
-        }
-
-        if(c == 'q'){
-              t0 = get_now_ms();
-          while(1){
-            std::this_thread::sleep_for (std::chrono::milliseconds(1));
-            t1 = get_now_ms();
-            if(t1-t0 > 10) break;
-          }
-          running = 0;
-          game_over = 1;
-          break;
-        }
-      std::this_thread::sleep_for (std::chrono::milliseconds(10));
-          }
-        }
-        pass = new DataState(avatar,enemy,proj);
-        pass->serialize(buffer);
-        send(connection_fd[user_iterator],pass,sizeof(DataState), MSG_NOSIGNAL);
-	     }
-
-  }
 
     if(game_over == 1) {
-      if(ganhou){
-	 //player->play(winner);
-      t0 = get_now_ms();
-      while(1){
-        std::this_thread::sleep_for (std::chrono::milliseconds(1));
-        t1 = get_now_ms();
-        if(t1-t0 > 10) break;
-      }
-      winner->set_position(0);
-	win();
-      }
-      else{
-	 //player->play(loser);
-      t0 = get_now_ms();
-      while(1){
-        std::this_thread::sleep_for (std::chrono::milliseconds(1));
-        t1 = get_now_ms();
-        if(t1-t0 > 10) break;
-      }
-      loser->set_position(0);
-      lose();
-	lose();
-      }
+        if(ganhou) {
+            //player->play(winner);
+            t0 = get_now_ms();
+            while(1) {
+                std::this_thread::sleep_for (std::chrono::milliseconds(1));
+                t1 = get_now_ms();
+                if(t1-t0 > 10) break;
+            }
+            winner->set_position(0);
+            win();
+        }
+        else {
+            //player->play(loser);
+            t0 = get_now_ms();
+            while(1) {
+                std::this_thread::sleep_for (std::chrono::milliseconds(1));
+                t1 = get_now_ms();
+                if(t1-t0 > 10) break;
+            }
+            loser->set_position(0);
+            lose();
+        }
     }
     // Segura na tela por 1.5 seg
     t0 = get_now_ms();
-    while(1){
-    t1 = get_now_ms();
-    if(t1 - t0 > 1500) break;
+    while(1) {
+        t1 = get_now_ms();
+        if(t1 - t0 > 1500) break;
     }
-  //player->stop();
-  tela->stop();
-  //teclado->stop();
-  close(socket_fd);
-
-  connection_control.join();
-  return 0;
+    tela->stop();
+    close(socket_fd);
+    connection_control.join();
+    return 0;
 }

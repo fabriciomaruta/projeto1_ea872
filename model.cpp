@@ -53,7 +53,10 @@ Projetil::Projetil(char sym, int ativo, int posX, int posY, int old_posX, int ol
     this->old_posX = old_posX;
     this->old_posY = old_posY;
 }
+void Projetil::set_sym(char sym){
+  this->sym = sym;
 
+}
 void Projetil::disparar(int origemX, int origemY){
     this->posX = origemX;
     this->posY = origemY;
@@ -149,7 +152,9 @@ void Corpo::update(int X, int Y) {
 
 
 }
-
+void Corpo::set_avatar(char avatar){
+  this->avatar = avatar;
+}
 int Corpo::get_pos_X() {
   return this->pos_X;
 }
@@ -510,6 +515,19 @@ DataState::DataState(Corpo *jogador, Enemy *inimigo, Projetil *projetil){
 DataState::DataState(std::string buffer_in){
   this->unserialize(buffer_in);
 }
+void DataState::atualiza(Corpo *jogador, Enemy *inimigo, Projetil *projetil){
+  this->data.jogador_X = jogador->get_pos_X();
+  this->data.jogador_Y = jogador->get_pos_Y();
+  this->data.jogador_avatar = jogador->get_avatar();
+
+  this->data.inimigo_X = inimigo->get_pos_X();
+  this->data.inimigo_Y = inimigo->get_pos_Y();
+  this->data.inimigo_avatar = inimigo->get_avatar();
+
+  this->data.projetil_X = projetil->get_posX();
+  this->data.projetil_Y = projetil->get_posY();
+  this->data.projetil_avatar = projetil->get_sym();
+}
 
 void DataState::serialize(std::string &buffer_out){
     std::memcpy((void*)buffer_out.c_str(), &(this->data), sizeof(DataContainer));
@@ -517,3 +535,21 @@ void DataState::serialize(std::string &buffer_out){
 void DataState::unserialize(std::string buffer_in) {
   std::memcpy(&(this->data), (void*)buffer_in.c_str(), sizeof(DataContainer));
 }
+char DataState::jogador_get_avatar(){
+  return this->data.jogador_avatar;
+}
+  int DataState::jogador_get_pos_X(){
+    return this->data.jogador_X;
+  }
+  int DataState::jogador_get_pos_Y(){
+    return this->data.jogador_Y;
+  }
+  char DataState::projetil_get_avatar(){
+    return this->data.projetil_avatar;
+  }
+  int DataState::projetil_get_pos_X(){
+    return this->data.projetil_X;
+  }
+  int DataState::projetil_get_pos_Y(){
+    return this->data.projetil_Y;
+  }
