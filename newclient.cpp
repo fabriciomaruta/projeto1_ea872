@@ -16,7 +16,7 @@
 #define MAX_CONEXOES 10
 
 int socket_fd;
-
+ListaDeCorpos *jogadores = new ListaDeCorpos();
 void *receber_respostas(){
   /* Recebendo resposta */
   char reply[60];
@@ -39,11 +39,11 @@ int main() {
   int msg_len;
   int msg_num;
   DataState *received;
-  Corpo *pl1 = new Corpo(' ', 3,2,0,0);
+  Corpo *pl1 = new Corpo(' ', 3,2,0,0,0);
   Enemy *enemy = new Enemy(' ',5,5,0,0);
   Projetil *proj = new Projetil(' ',0,0,0,0,0);
   Tela *tela = new Tela(pl1,enemy,proj,20,20,20,20);
-
+  Corpo *player[MAX_CONEXOES];
   //enemy->init();
   //pl1->init();
   received = new DataState(pl1,enemy,proj);
@@ -52,7 +52,7 @@ int main() {
   printf("Socket criado\n");
 
   target.sin_family = AF_INET;
-  target.sin_port = htons(7456);
+  target.sin_port = htons(7466);
   inet_aton("127.0.0.1", &(target.sin_addr));
   printf("Tentando conectar\n");
   if (connect(socket_fd, (struct sockaddr*)&target, sizeof(target)) != 0) {
@@ -66,19 +66,16 @@ int main() {
   while(1){
     tela->update();
     com = getch();
-    //printf("\ncomando:  %c", com );
-    //if(com  != -1){
     send(socket_fd,&com,1,0);
-      //printf("Comando Enviado !\n");
-    //}
     msg_num = 0;
     msg_len = recv(socket_fd,(void *)buffer.c_str(), sizeof(DataContainer), MSG_DONTWAIT);
     if (msg_len > 0) {
       received->unserialize(buffer);
-      pl1->set_avatar(received->jogador_get_avatar());
-      proj->set_sym(received->projetil_get_avatar());
-      proj->disparar(received->projetil_get_pos_X(),received->projetil_get_pos_Y());
-      pl1->update(received->jogador_get_pos_X(), received->jogador_get_pos_Y());
+      Corpo * c = new Corpo(received->jogador_get_avatar(),received->jogador_get_pos_X(), received->jogador_get_pos_Y(),0,0, received->jogador_get_indice());
+      player[received->jogador_get_indice()] = c ;
+      tela->set_Corpo(c);
+      (player)[received->jogador_get_indice()]->set_avatar(received->jogador_get_avatar());
+      (player)[received->jogador_get_indice()]->update(received->jogador_get_pos_X(), received->jogador_get_pos_Y());
       tela->update();
     }
 

@@ -17,7 +17,7 @@ struct DataContainer {
   int jogador_X;
   int jogador_Y;
   char jogador_avatar;
-
+  int jogador_indice;
   int inimigo_X;
   int inimigo_Y;
   char inimigo_avatar;
@@ -59,9 +59,10 @@ class Corpo { /*Classe para criar o personagem e as caracteristicas*/
   int pos_Y;
   int old_pos_X;
   int old_pos_Y;
+  int indice;
 
   public:
-    Corpo(char avatar, int pos_X, int pos_Y, int old_pos_X, int old_pos_Y);
+    Corpo(char avatar, int pos_X, int pos_Y, int old_pos_X, int old_pos_Y, int indice);
     void init();
     void set_avatar(char avatar);
     void update(int X, int Y);
@@ -74,6 +75,8 @@ class Corpo { /*Classe para criar o personagem e as caracteristicas*/
     void moveBottom();
     void moveRight();
     void moveLeft();
+    void setIndice(int i);
+    int get_indice();
 };
 
 class ListaDeCorpos { /*Classe para controlar lista de "personagens"*/
@@ -114,7 +117,7 @@ public:
 /*Classe para controlar a tela*/
 class Tela{
   private:
-    //ListaDeCorpos *lista, *lista_anterior;
+    //ListaDeCorpos *lista;
     Corpo *corpo;
     Enemy *enemy;
     Projetil *proj;
@@ -129,6 +132,7 @@ class Tela{
     void initMap();
     void stop();
     void update();
+    void set_Corpo(Corpo *corpo);
 
 };
 
@@ -164,6 +168,7 @@ public:
   int jogador_get_pos_Y();
   char projetil_get_avatar();
   int projetil_get_pos_X();
+  int jogador_get_indice();
   int projetil_get_pos_Y();
 };
 

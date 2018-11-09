@@ -17,6 +17,7 @@
 
 /*Socket variables*/
 int socket_fd, connection_fd[MAX_CONEXOES], conexao_usada[MAX_CONEXOES];
+ListaDeCorpos *players = new ListaDeCorpos();
 socklen_t client_size;
 struct sockaddr_in myself, client;
 
@@ -36,6 +37,8 @@ int adicionar_conexao(int new_connection_fd) {
         if (conexao_usada[i] == 0) {
             conexao_usada[i] = 1;
             connection_fd[i] = new_connection_fd;
+            Corpo *newp = new Corpo('o'+i,5+i,3+i,0,0,i);
+            players->add_corpo(newp);
             return i;
         }
     }
@@ -143,7 +146,7 @@ int main() {
     running = 1;
     socket_fd = socket(AF_INET, SOCK_STREAM, 0);
     myself.sin_family = AF_INET;
-    myself.sin_port = htons(7456);
+    myself.sin_port = htons(7466);
     inet_aton("127.0.0.1", &(myself.sin_addr));
     printf("Tentando abrir porta 3001\n");
     if (bind(socket_fd, (struct sockaddr*)&myself, sizeof(myself)) != 0) {
@@ -153,7 +156,7 @@ int main() {
     printf("Abri porta 3001");
     listen(socket_fd, 2);
     std::thread connection_control(wait_connections); //Insert arguments
-    Corpo *avatar = new Corpo('@', 6, 7,0,0);
+    Corpo *avatar = new Corpo(' ',  0, 0,0,0,0);
     Enemy *enemy = new Enemy('*', 5, 5,0,0);
     Projetil *proj = new Projetil('|',0,0,0,0,0);
     enemy->init();
@@ -203,24 +206,25 @@ int main() {
         for(user_iterator = 0; user_iterator < MAX_CONEXOES; user_iterator ++) {
             if(conexao_usada[user_iterator] == 1) {
                 msglen = recv(connection_fd[user_iterator], &c, 1, MSG_DONTWAIT);
+                std::vector<Corpo *> *jogador = players->get_corpos();
                 if (msglen > 0 && game_over != 1) {
                     if (c == ' ' && proj->isAtivo() == 0) {
-                        int X = avatar->get_pos_X();
-                        int Y = avatar->get_pos_Y();
+                        int X = (*jogador)[user_iterator]->get_pos_X();
+                        int Y = (*jogador)[user_iterator]->get_pos_Y();
                         proj->setAtivo(1);
                         proj->disparar(X,Y);
                     }
                     if (c == 's') {
-                        avatar->moveTop();
+                        (*jogador)[user_iterator]->moveTop();
                     }
                     if (c == 'w') {
-                        avatar->moveBottom();
+                        (*jogador)[user_iterator]->moveBottom();
                     }
                     if (c == 'd') {
-                        avatar->moveRight();
+                        (*jogador)[user_iterator]->moveRight();
                     }
                     if (c == 'a') {
-                        avatar->moveLeft();
+                        (*jogador)[user_iterator]->moveLeft();
                     }
                     if(c == 'q') {
                         running = 0;
@@ -229,12 +233,12 @@ int main() {
                     }
                     for(int ret = 0; ret<MAX_CONEXOES;ret++){
                       if(conexao_usada[ret] == 1){
-                          pass->atualiza(avatar,enemy,proj);
-                          pass->serialize(buffer);
-                          if(send(connection_fd[user_iterator],pass,sizeof(DataContainer), MSG_NOSIGNAL) == -1){
+                        pass->atualiza((*jogador)[ret],enemy,proj);
+                        pass->serialize(buffer);
+                        if(send(connection_fd[user_iterator],pass,sizeof(DataContainer), MSG_NOSIGNAL) == -1){
 
-                            remover_conexao(ret);
-                          }
+                          remover_conexao(ret);
+                        }
                       }
                     }
                 }

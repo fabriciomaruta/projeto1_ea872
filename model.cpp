@@ -118,18 +118,25 @@ void Projetil::setAtivo(int value){
 }
 
 
-Corpo::Corpo(char avatar, int pos_X, int pos_Y, int old_pos_X, int old_pos_Y) {
+Corpo::Corpo(char avatar, int pos_X, int pos_Y, int old_pos_X, int old_pos_Y,int indice) {
   this->avatar = avatar;/*bonequinho do player ou inimigo*/
   this->pos_X = pos_X;
   this->pos_Y = pos_Y;
   this->old_pos_X = old_pos_X;
   this->old_pos_Y = old_pos_Y;
+  this->indice = 0;
 }
 void Corpo::init(){
     int X = get_pos_X();
     int Y = get_pos_Y();
     map[X][Y] = get_avatar();
 };
+void Corpo::setIndice(int i){
+  this->indice = i;
+}
+int Corpo::get_indice(){
+  return this->indice;
+}
 void Corpo::update(int X, int Y) {
   this->old_pos_X = this->pos_X; // Holds _
   this->old_pos_Y = this->pos_Y; // last position
@@ -227,7 +234,7 @@ void ListaDeCorpos::hard_copy(ListaDeCorpos *ldc) {
   std::vector<Corpo *> *corpos = ldc->get_corpos();
 
   for (int k=0; k<corpos->size(); k++) {
-    Corpo *c = new Corpo( (*corpos)[k]->get_avatar(), (*corpos)[k]->get_pos_X(), (*corpos)[k]->get_pos_Y(), (*corpos)[k]->get_old_pos_X(), (*corpos)[k]->get_old_pos_Y());
+    Corpo *c = new Corpo( (*corpos)[k]->get_avatar(), (*corpos)[k]->get_pos_X(), (*corpos)[k]->get_pos_Y(), (*corpos)[k]->get_old_pos_X(), (*corpos)[k]->get_old_pos_Y(),(*corpos)[k]->get_indice());
     this->add_corpo(c);
 
   }
@@ -284,6 +291,12 @@ void Tela::initMap(){
     }
 }
 
+void Tela::set_Corpo(Corpo *corpo){
+  this->corpo = corpo;
+
+}
+
+
 void Tela::update(){
   int linha, coluna;
   int i,j;
@@ -292,8 +305,6 @@ void Tela::update(){
   int x, y;
   int x_proj, y_proj;
   int x_enemy, y_enemy;
-
-
 
     if((this->proj)->isAtivo()){
         i_proj = (int) ((this->proj)->get_old_posX());//*(this->maxI/this->maxX);
@@ -322,10 +333,6 @@ void Tela::update(){
     }
 
 
-
-
-
-
   getmaxyx(stdscr, linha, coluna); /*linha e coluna armazenam o tamanho da tela*/
   i = (int) ((this->corpo)->get_old_pos_X());//*(this->maxI/this->maxX);
   j = (int) ((this->corpo)->get_old_pos_Y());//*(this->maxJ/this->maxY);
@@ -350,8 +357,6 @@ void Tela::update(){
     move(y, x);
     echochar(this->corpo->get_avatar());
 
-
-
   x_enemy = this->enemy->get_pos_X();
   y_enemy = this->enemy->get_pos_Y();
 
@@ -360,13 +365,9 @@ void Tela::update(){
 
   refresh();
 
-
-
   // Imprime a pontuacao na tela
   move(6,25);
   echochar(48+points);
-
-
 }
 
 Teclado::Teclado(){
@@ -518,6 +519,7 @@ DataState::DataState(std::string buffer_in){
 void DataState::atualiza(Corpo *jogador, Enemy *inimigo, Projetil *projetil){
   this->data.jogador_X = jogador->get_pos_X();
   this->data.jogador_Y = jogador->get_pos_Y();
+  this->data.jogador_indice = jogador->get_indice();
   this->data.jogador_avatar = jogador->get_avatar();
 
   this->data.inimigo_X = inimigo->get_pos_X();
@@ -538,6 +540,9 @@ void DataState::unserialize(std::string buffer_in) {
 char DataState::jogador_get_avatar(){
   return this->data.jogador_avatar;
 }
+int DataState::jogador_get_indice(){
+    return this->data.jogador_indice;
+  }
   int DataState::jogador_get_pos_X(){
     return this->data.jogador_X;
   }
