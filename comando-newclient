@@ -1,0 +1,1 @@
+g++ newclient.cpp model.cpp model.hpp -o nclient -lpthread -lncurses -std=c++11

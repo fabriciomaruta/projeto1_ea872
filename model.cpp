@@ -162,8 +162,15 @@ void Corpo::update(int X, int Y) {
 void Corpo::set_avatar(char avatar){
   this->avatar = avatar;
 }
+void Corpo::set_pos_X(int posx) {
+  this->pos_X = posx;
+}
 int Corpo::get_pos_X() {
   return this->pos_X;
+}
+
+void Corpo::set_pos_Y(int posy) {
+  this->pos_Y = posy;
 }
 
 int Corpo::get_pos_Y() {
@@ -232,14 +239,12 @@ void ListaDeCorpos::add_corpo(Corpo *c) {
 }
 void ListaDeCorpos::hard_copy(ListaDeCorpos *ldc) {
   std::vector<Corpo *> *corpos = ldc->get_corpos();
-
   for (int k=0; k<corpos->size(); k++) {
     Corpo *c = new Corpo( (*corpos)[k]->get_avatar(), (*corpos)[k]->get_pos_X(), (*corpos)[k]->get_pos_Y(), (*corpos)[k]->get_old_pos_X(), (*corpos)[k]->get_old_pos_Y(),(*corpos)[k]->get_indice());
     this->add_corpo(c);
-
   }
-
 }
+
 std::vector<Corpo*> *ListaDeCorpos::get_corpos() {
   return (this->corpos);
 }
@@ -296,7 +301,6 @@ void Tela::set_Corpo(Corpo *corpo){
 
 }
 
-
 void Tela::update(){
   int linha, coluna;
   int i,j;
@@ -306,34 +310,9 @@ void Tela::update(){
   int x_proj, y_proj;
   int x_enemy, y_enemy;
 
-    if((this->proj)->isAtivo()){
-        i_proj = (int) ((this->proj)->get_old_posX());//*(this->maxI/this->maxX);
-        j_proj = (int) ((this->proj)->get_old_posY());//*(this->maxJ/this->maxY);
-
-        /* Apaga a posicao antiga do projetil da tela */
-        move(j_proj,i_proj);   /* Move cursor to position */
-        echochar(' ');
-
-
-        x_proj = this->proj->get_posX();
-        y_proj = this->proj->get_posY();
-
-        move(y_proj, x_proj);
-        echochar(this->proj->get_sym());
-    }
-
-    if(apagar == 1){
-        i_proj = (int) ((this->proj)->get_old_posX());//*(this->maxI/this->maxX);
-        j_proj = (int) ((this->proj)->get_old_posY());//*(this->maxJ/this->maxY);
-
-        /* Apaga a posicao antiga do projetil da tela */
-        move(j_proj,i_proj);   /* Move cursor to position */
-        echochar(' ');
-        apagar = 0;
-    }
-
-
   getmaxyx(stdscr, linha, coluna); /*linha e coluna armazenam o tamanho da tela*/
+
+
   i = (int) ((this->corpo)->get_old_pos_X());//*(this->maxI/this->maxX);
   j = (int) ((this->corpo)->get_old_pos_Y());//*(this->maxJ/this->maxY);
 
@@ -341,27 +320,15 @@ void Tela::update(){
     move(j,i);   /* Move cursor to position */
     echochar(' ');
 
-  i_enemy = (int) ((this->enemy)->get_old_pos_X());//*(this->maxI/this->maxX);
-  j_enemy = (int) ((this->enemy)->get_old_pos_Y());//*(this->maxJ/this->maxY);
-
-    /* Apaga a posicao antiga do inimigo da tela */
-    move(j_enemy,i_enemy );   /* Move cursor to position */
-    echochar(' ');
-
-
 
 
   x = this->corpo->get_pos_X();
   y = this->corpo->get_pos_Y();
 
     move(y, x);
+    // echochar(' ');
     echochar(this->corpo->get_avatar());
 
-  x_enemy = this->enemy->get_pos_X();
-  y_enemy = this->enemy->get_pos_Y();
-
-    move(y_enemy, x_enemy);
-    echochar(this->enemy->get_avatar());
 
   refresh();
 

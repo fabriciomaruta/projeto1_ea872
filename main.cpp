@@ -37,7 +37,7 @@ int adicionar_conexao(int new_connection_fd) {
         if (conexao_usada[i] == 0) {
             conexao_usada[i] = 1;
             connection_fd[i] = new_connection_fd;
-            Corpo *newp = new Corpo('o'+i,5+i,3+i,0,0,i);
+            Corpo *newp = new Corpo('a'+i,5+i,3+i,0,0,i);
             players->add_corpo(newp);
             return i;
         }
@@ -156,7 +156,7 @@ int main() {
     printf("Abri porta 3001");
     listen(socket_fd, 2);
     std::thread connection_control(wait_connections); //Insert arguments
-    Corpo *avatar = new Corpo(' ',  0, 0,0,0,0);
+    Corpo *avatar = new Corpo('X',  0, 0,0,0,0);
     Enemy *enemy = new Enemy('*', 5, 5,0,0);
     Projetil *proj = new Projetil('|',0,0,0,0,0);
     enemy->init();
@@ -207,7 +207,7 @@ int main() {
             if(conexao_usada[user_iterator] == 1) {
                 msglen = recv(connection_fd[user_iterator], &c, 1, MSG_DONTWAIT);
                 std::vector<Corpo *> *jogador = players->get_corpos();
-                if (msglen > 0 && game_over != 1) {
+                if (msglen >= 0 && game_over != 1) {
                     if (c == ' ' && proj->isAtivo() == 0) {
                         int X = (*jogador)[user_iterator]->get_pos_X();
                         int Y = (*jogador)[user_iterator]->get_pos_Y();
@@ -231,13 +231,17 @@ int main() {
                         game_over = 1;
                         break;
                     }
+
                     for(int ret = 0; ret<MAX_CONEXOES;ret++){
                       if(conexao_usada[ret] == 1){
                         pass->atualiza((*jogador)[ret],enemy,proj);
                         pass->serialize(buffer);
-                        if(send(connection_fd[user_iterator],pass,sizeof(DataContainer), MSG_NOSIGNAL) == -1){
-
-                          remover_conexao(ret);
+                        for(int sender = 0; sender < MAX_CONEXOES; sender ++){
+                          if(conexao_usada[sender] == 1){
+                            if(send(connection_fd[sender],pass,sizeof(DataContainer), MSG_DONTWAIT) == -1){
+                              remover_conexao(sender);
+                            }
+                          }
                         }
                       }
                     }
